@@ -27,7 +27,7 @@ class authController {
             const {phone, code} = req.body;
             const userData = await User.findOne({phone});
             let userProfile = await UserProfile.findOne({phone});
-            userProfile ? userProfile = await new UserProfile({phone, language: "Русский", sex: "Мужской", birthday: "", age: "18-24"}) : null;
+            !userProfile ? userProfile = await new UserProfile({phone, language: "Русский", sex: "Мужской", birthday: "", age: "18-24"}) : null;
             const validateCode = code === userData.code;
             if (!validateCode) {
                 res.status(400).json({message: "Неверный код"});
