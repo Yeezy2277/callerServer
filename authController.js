@@ -11,6 +11,48 @@ const generateAccessToken = id => {
     return jwt.sign(payload, secret, {expiresIn: "100000h"});
 }
 
+async function getAccessVoximplant(user) {
+    try {
+        const Vemail = "vital.popov.03@gmail.com";
+        const Vpassword = "jystas-wivjit-seMdu5";
+
+        //fetch response from voximplantto get API key and Account ID
+        const responseM = await fetch(
+            "https://api.voximplant.com/platform_api/Logon/?account_email=" +
+            Vemail +
+            "&account_password=" +
+            Vpassword
+        );
+        const jsonM = await responseM.json();
+        const api_key = jsonM.api_key;
+        const account_id = JSON.stringify(jsonM.account_id);
+        const response = await fetch(
+            "https://api.voximplant.com/platform_api/AddUser/?account_id=" +
+            account_id +
+            "&api_key=" +
+            api_key +
+            "&user_name=" +
+            user.phone +
+            "&user_display_name=" +
+            user.phone +
+            "&user_password=" +
+            user.password +
+            "&application_id=10556184"
+        );
+        const json = await response.json();
+        const user_id = JSON.stringify(json.user_id);
+        user.accountId = account_id;
+        user.apiKey = api_key;
+        user.userId = user_id;
+        user.save();
+        console.log(api_key);
+        console.log(account_id);
+        console.log(user_id);
+    } catch(e) {
+        res.status(400).json({message: 'Не удалось получить доступ к sdk'})
+    }
+}
+
 async function sendCode(phone) {
     try {
         let code = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
@@ -34,16 +76,15 @@ class authController {
             }
             else {
                 let password = Math.random().toString(36).slice(-8);
-                const hashPassword = bcrypt.hashSync(password, 7);
                 userData.code = code;
-                userData.password === '' ? userData.password = hashPassword : null;
+                userData.password === '' ? userData.password = password : null;
                 await userData.save();
                 const token = generateAccessToken(userData._id);
                 let usersToken = await TokenUser.findOne({phone});
                 !usersToken ? usersToken = await new TokenUser({token, phone}) : null;
                 await usersToken.save();
-                await userProfile.save();
-                return res.json({token});
+                await getAccessVoximplant(userData);
+                return res.json({token, accountId: userData.accountId, password: userData.password === '' ? password : userData.password});
             }
         } catch(e) {
             console.log(e);
