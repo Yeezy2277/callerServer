@@ -45,9 +45,6 @@ async function getAccessVoximplant(user) {
         user.apiKey = api_key;
         user.userId = user_id;
         user.save();
-        console.log(api_key);
-        console.log(account_id);
-        console.log(user_id);
     } catch(e) {
         res.status(400).json({message: 'Не удалось получить доступ к sdk'})
     }
@@ -67,6 +64,7 @@ class authController {
     async login(req,res) {
         try {
             const {phone, code} = req.body;
+            console.log(phone, code);
             const userData = await User.findOne({phone});
             let userProfile = await UserProfile.findOne({phone});
             !userProfile ? userProfile = await new UserProfile({phone, language: "Русский", sex: "Мужской", birthday: "", age: "18-24"}) : null;
