@@ -35,8 +35,7 @@ async function getAccessVoximplant(user) {
             user.phone +
             "&user_display_name=" +
             user.phone +
-            "&user_password=" +
-            user.password +
+            "&user_password=gh85962h7d6h27d6d6" +
             "&application_id=10556184"
         );
         const json = await response.json();
@@ -67,7 +66,7 @@ class authController {
             console.log(phone, code);
             const userData = await User.findOne({phone});
             let userProfile = await UserProfile.findOne({phone});
-            !userProfile ? userProfile = await new UserProfile({phone, language: "Русский", sex: "Мужской", birthday: "", age: "18-24"}) : null;
+            !userProfile ? userProfile = await new UserProfile({phone, language: "Русский", sex: "Мужской", birthday: "", age: "18-24", isIncome: true}) : null;
             const validateCode = code === userData.code;
             if (!validateCode) {
                 res.status(400).json({message: "Неверный код"});

@@ -7,6 +7,7 @@ const UserProfile = new Schema({
     birthday: {type: String, required: false},
     age: {type: String, required: false},
     userType: {type: String, required: false},
+    isIncome: {type: Boolean, required: false},
 })
 
 module.exports = model('UserProfile', UserProfile);
