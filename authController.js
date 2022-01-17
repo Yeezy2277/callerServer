@@ -127,8 +127,31 @@ class authController {
     }
     async users(req, res) {
         try {
-            const {language, sex, birthday, age, userType} = req.body;
-            const userProfile = await UserProfile.find({language, age, userType});
+            const {language, sex, age, userType} = req.body;
+            const userProfile = await UserProfile.find({language, age, sex, userType, isIncoming: true});
+            return res.json(userProfile);
+        } catch(e) {
+            console.log(e);
+            res.status(400).json({message: "Произошла ошибка"});
+        }
+    }
+    async getIncomingState(req, res) {
+        try {
+            const token = req.headers.authorization.split(' ')[1]
+            const userProfile = await UserProfile.findOne({token});
+            return res.json(userProfile);
+        } catch(e) {
+            console.log(e);
+            res.status(400).json({message: "Произошла ошибка"});
+        }
+    }
+    async setIncomingState(req, res) {
+        try {
+            const {isIncoming} = req.body;
+            const token = req.headers.authorization.split(' ')[1]
+            const userProfile = await UserProfile.findOne({token});
+            userProfile.isIncoming = isIncoming;
+            userProfile.save();
             return res.json(userProfile);
         } catch(e) {
             console.log(e);
