@@ -14,7 +14,7 @@ const generateAccessToken = id => {
 async function getAccessVoximplant(user) {
     try {
         const Vemail = "vital.popov.04@gmail.com";
-        const Vpassword = "Vitalik123_";
+        const Vpassword = "Vitalik123-";
 
         //fetch response from voximplantto get API key and Account ID
         const responseM = await fetch(
