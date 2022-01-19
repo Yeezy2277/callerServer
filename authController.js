@@ -36,7 +36,7 @@ async function getAccessVoximplant(user) {
             "&user_display_name=" +
             user.phone +
             "&user_password=gh85962h7d6h27d6d6" +
-            "&application_id=10556184"
+            "&application_id=10570134"
         );
         const json = await response.json();
         const user_id = JSON.stringify(json.user_id);
