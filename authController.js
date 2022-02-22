@@ -1,6 +1,7 @@
 const User = require('./models/User');
 const TokenUser = require('./models/TokenUser');
 const UserProfile = require('./models/UserProfile');
+const UserIp = require('./models/UserIp');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
@@ -14,7 +15,7 @@ const generateAccessToken = id => {
 async function getAccessVoximplant(user) {
     try {
         const Vemail = "vital.popov.04@gmail.com";
-        const Vpassword = "Vitalik123_";
+        const Vpassword = "Vitalik123-";
 
         //fetch response from voximplantto get API key and Account ID
         const responseM = await fetch(
@@ -78,8 +79,12 @@ class authController {
                 await userData.save();
                 const token = generateAccessToken(userData._id);
                 let usersToken = await TokenUser.findOne({phone});
-                !usersToken ? usersToken = await new TokenUser({token, phone}) : null;
+                console.log(usersToken);
+                !usersToken ? usersToken = await new TokenUser({token, phone}) : usersToken.token = token;
                 await usersToken.save();
+                await userProfile.save();
+                console.log('userdata');
+                console.log(userData);
                 await getAccessVoximplant(userData);
                 return res.json({token, accountId: userData.accountId, password: userData.password === '' ? password : userData.password});
             }
@@ -111,8 +116,10 @@ class authController {
     async userProfile(req, res) {
         try {
             const {language, sex, birthday, age, userType} = req.body;
+	    console.log(req.body);
             const token = req.headers.authorization.split(' ')[1]
-            const userProfile = await UserProfile.findOne({token});
+            const userToken = await TokenUser.findOne({token});
+            const userProfile = await UserProfile.findOne({phone: userToken.phone});
             userProfile.language = language;
             userProfile.sex = sex;
             userProfile.birthday = birthday;
@@ -121,17 +128,48 @@ class authController {
             await userProfile.save();
             return res.json(userProfile);
         } catch(e) {
-            console.log(e);
+            console.log(req.body);
             res.status(400).json({message: "Произошла ошибка"});
         }
     }
-    async users(req, res) {
+async getUserProfile(req, res) {
         try {
-            const {language, sex, age, userType} = req.body;
-            const userProfile = await UserProfile.find({language, age, sex, userType, isIncoming: true});
+            const token = req.headers.authorization.split(' ')[1]
+            const userProfile = await UserProfile.findOne({token});
             return res.json(userProfile);
         } catch(e) {
+            console.log(req.body);
+            res.status(400).json({message: "Произошла ошибка"});
+        }
+    }
+async getIpAddress(req, res) {
+        try {
+            const ip = req.ip;
+            const userIp = new UserIp({ip});
+            await userIp.save();
+            return res.json(ip);
+        } catch(e) {
+            console.log(req.body);
+            res.status(400).json({message: "Произошла ошибка"});
+        }
+    }
+
+    async users(req, res) {
+        try {
+            const token = req.headers.authorization.split(' ')[1]
+            let userToken = await TokenUser.findOne({token});
+            const phone = userToken.phone;
+            console.log(userToken);
+            const {language, sex, age, userType} = req.body;
+            const userProfile = await UserProfile.find({language, age, sex, userType, isIncome: true});
+            const user = userProfile.map(item => {
+             return item.phone === phone ? null : {phone: item.phone}
+})
+           const userWithoutNumber = user.filter(i => i !== null);
+            return res.json(userWithoutNumber);
+        } catch(e) {
             console.log(e);
+            console.log(req.body);
             res.status(400).json({message: "Произошла ошибка"});
         }
     }
@@ -149,8 +187,9 @@ class authController {
         try {
             const {isIncoming} = req.body;
             const token = req.headers.authorization.split(' ')[1]
-            const userProfile = await UserProfile.findOne({token});
-            userProfile.isIncoming = isIncoming;
+            const userToken = await TokenUser.findOne({token});
+            let userProfile = await UserProfile.findOne({phone: userToken.phone});
+            userProfile.isIncome = isIncoming;
             userProfile.save();
             return res.json(userProfile);
         } catch(e) {
